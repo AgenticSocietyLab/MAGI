@@ -1,7 +1,7 @@
-"""Historical migration for the superseded ``tools`` projection table.
+"""Remove the superseded ``tools`` projection table.
 
-The next migration drops this table. The revision is retained solely so an
-already-upgraded installation has a valid Alembic history.
+``tool_definitions`` and ``tool_catalog_state`` are the one durable catalog.
+No runtime code reads or writes the former execution-registry projection.
 """
 
 from __future__ import annotations
@@ -10,16 +10,18 @@ from alembic import op
 import sqlalchemy as sa
 
 
-revision = "0014_tool_registry_compat"
-down_revision = "0013_tool_job_catalog_snapshot"
+revision = "0015_drop_legacy_tool_registry"
+down_revision = "0014_tool_registry_compat"
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
-    existing = set(sa.inspect(op.get_bind()).get_table_names())
-    if "tools" in existing:
-        return
+    if "tools" in set(sa.inspect(op.get_bind()).get_table_names()):
+        op.drop_table("tools")
+
+
+def downgrade() -> None:
     op.create_table(
         "tools",
         sa.Column("name", sa.String(length=128), primary_key=True),
@@ -32,8 +34,3 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
     )
-
-
-def downgrade() -> None:
-    # Retain compatibility data for an older WebUI process during rollback.
-    pass

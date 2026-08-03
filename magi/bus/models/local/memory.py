@@ -1,6 +1,6 @@
-"""Deprecated import path; local memory persistence is BUS-owned."""
+"""Internal Local SQLite memory model used by BUS repositories."""
 
-from magi.bus.models.local.memory import (
+from magi.db.models_memory import (
     ALL_KINDS,
     KIND_IMPORTANT,
     KIND_ONGOING,
